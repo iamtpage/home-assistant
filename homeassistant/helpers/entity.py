@@ -99,6 +99,9 @@ class Entity:
     # If we reported if this entity was slow
     _slow_reported = False
 
+    # If we reported this entity is updated while disabled
+    _disabled_reported = False
+
     # Protect for multiple updates
     _update_staged = False
 
@@ -489,6 +492,10 @@ class Entity:
         ent_reg = await self.hass.helpers.entity_registry.async_get_registry()
         old = self.registry_entry
         self.registry_entry = ent_reg.async_get(data["entity_id"])
+
+        if self.registry_entry.disabled_by is not None:
+            await self.async_remove()
+            return
 
         if self.registry_entry.entity_id == old.entity_id:
             self.async_write_ha_state()
